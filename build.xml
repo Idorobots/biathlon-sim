@@ -1,0 +1,26 @@
+<project>
+
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="bin"/>
+	<mkdir dir="bin/classes"/>
+        <javac srcdir="src" destdir="bin/classes"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="bin/jar"/>
+        <jar destfile="bin/jar/Simulation.jar" basedir="bin/classes">
+            <manifest>
+                <attribute name="Main-Class" value="sim.Biathlete"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java jar="bin/jar/Simulation.jar" fork="true"/>
+    </target>
+
+</project>
