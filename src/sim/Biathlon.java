@@ -8,30 +8,30 @@ import desmoj.core.simulator.TimeInstant;
 public class Biathlon extends Model {
 
     protected static final float COMPETITOR_STEP_TIME = 1.0f;
-	protected static final int NUM_COMPETITORS = 5;
+	protected static final int NUM_COMPETITORS = 30;
 	protected static final int NUM_SHOOTING_RANGES = 4;
 	protected static final int SHOTS_PER_SHOOTING = 5;
 
 	protected static final float INITIAL_DISTANCE = 15f;
 	protected static final float PENALTY_DISTANCE = 0.15f;
 
-    protected static final float MIN_ACCURACY = 0.8f;
-    protected static final float AVERAGE_ACCURACY = 0.9f;
-    protected static final float MAX_ACCURACY = 1.1f;
+    protected static final float MIN_ACCURACY = 0.9f;
+    protected static final float AVERAGE_ACCURACY = 0.95f;
+    protected static final float MAX_ACCURACY = 1.0f;
 
 
-    protected static final float MIN_SHOOTING_TIME = 2.0f;
-    protected static final float AVERAGE_SHOOTING_TIME = 3.5f;
-    protected static final float MAX_SHOOTING_TIME = 4.0f;
+    protected static final float MIN_SHOOTING_TIME = 2.2f;
+    protected static final float AVERAGE_SHOOTING_TIME = 2.8f;
+    protected static final float MAX_SHOOTING_TIME = 3.5f;
 
-    protected static final float MIN_SPEED = 0.8f;
-    protected static final float AVERAGE_SPEED = 1.0f;
-    protected static final float MAX_SPEED = 1.2f;
+    protected static final float MIN_SPEED = 0.65f;
+    protected static final float AVERAGE_SPEED = 0.7f;
+    protected static final float MAX_SPEED = 0.73f;
 
-    protected static final int MIN_DESPERATION = 5;
+    protected static final int MIN_DESPERATION = 0;
     protected static final int MAX_DESPERATION = 100;
-    protected static final int DESPERATION_THRESHOLD = 97;
-    protected static final int DESPERATION_GAIN_PER_MISS = 12;
+    protected static final int DESPERATION_THRESHOLD = 95;
+    protected static final int DESPERATION_GAIN_PER_MISS = 5;
 
 	/**
 	 * Zawodnicy czekajacy na strzelanie.

@@ -139,9 +139,9 @@ public class Competitor extends SimProcess {
 
         // Models linear change in these following parameters.
         // TODO Move these to Biathlon class.
-        speedFactor *= 0.97f;
-        accuracyFactor *= 0.97f;
-        aimingFactor *= 1.03f;
+        speedFactor *= 0.98f;
+        accuracyFactor *= 0.98f;
+        aimingFactor *= 1.02f;
 	}
 
 
@@ -163,20 +163,20 @@ public class Competitor extends SimProcess {
                 log("Desperation increases past the panic treshold.");
                 log("Competitor starts to panic.");
 
-                speedFactor *= 1.2f;
-                accuracyFactor *= 0.85f;
+                speedFactor *= 1.1f;
+                accuracyFactor *= 0.9f;
                 aimingFactor *= 1.1f;
             }
             else {
-                speedFactor *= 1.1f;
-                aimingFactor *= 1.1f;
-                accuracyFactor *= 0.9f;
+                speedFactor *= 1.05f;
+                aimingFactor *= 1.05f;
+                accuracyFactor *= 0.95f;
             }
         }
         else {
-            speedFactor *= 0.9f;
-            aimingFactor *= 0.9f;
-            accuracyFactor *= 1.1f;
+            speedFactor *= 0.95f;
+            aimingFactor *= 0.95f;
+            accuracyFactor *= 1.05f;
         }
 
         log(String.format("Speed factor changes to %.2f.", speedFactor));
