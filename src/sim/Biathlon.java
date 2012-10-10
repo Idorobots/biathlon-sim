@@ -7,12 +7,31 @@ import desmoj.core.simulator.TimeInstant;
 
 public class Biathlon extends Model {
 
-	protected static final int NUM_COMPETITORS = 2;
-
-	protected static final int NUM_SHOOTING_RANGES = 1;
+    protected static final float COMPETITOR_STEP_TIME = 1.0f;
+	protected static final int NUM_COMPETITORS = 5;
+	protected static final int NUM_SHOOTING_RANGES = 4;
 	protected static final int SHOTS_PER_SHOOTING = 5;
-	protected static final double INITIAL_DISTANCE = 10;
-	protected static final double PENALTY_DISTANCE = 5;
+
+	protected static final float INITIAL_DISTANCE = 15f;
+	protected static final float PENALTY_DISTANCE = 0.15f;
+
+    protected static final float MIN_ACCURACY = 0.8f;
+    protected static final float AVERAGE_ACCURACY = 0.9f;
+    protected static final float MAX_ACCURACY = 1.1f;
+
+
+    protected static final float MIN_SHOOTING_TIME = 2.0f;
+    protected static final float AVERAGE_SHOOTING_TIME = 3.5f;
+    protected static final float MAX_SHOOTING_TIME = 4.0f;
+
+    protected static final float MIN_SPEED = 0.8f;
+    protected static final float AVERAGE_SPEED = 1.0f;
+    protected static final float MAX_SPEED = 1.2f;
+
+    protected static final int MIN_DESPERATION = 5;
+    protected static final int MAX_DESPERATION = 100;
+    protected static final int DESPERATION_THRESHOLD = 97;
+    protected static final int DESPERATION_GAIN_PER_MISS = 12;
 
 	/**
 	 * Zawodnicy czekajacy na strzelanie.

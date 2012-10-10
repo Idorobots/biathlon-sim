@@ -1,6 +1,6 @@
 package sim;
 
-import desmoj.core.dist.ContDistExponential;
+import desmoj.core.dist.ContDistNormal;
 import desmoj.core.dist.ContDistUniform;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
@@ -10,45 +10,91 @@ public class Competitor extends SimProcess {
 
 	private Biathlon myModel;
 	private Logger logger;
+    private int ID = -1;
 
 	/**
-	 * Dystans pozostały wciąż do przebycia.
+	 * Distance left to cover.
 	 */
 	private double distanceToCover;
 
 	/**
-	 * Ile razy trzeba jeszcze odwiedzić strzelnicę.
+	 * Number of shooting range visits before finishing the run.
 	 */
 	private int shootingsLeft;
 
-	// http://desmoj.sourceforge.net/doc/desmoj/core/dist/ContDistExponential.html
-	private ContDistExponential speed;
+	/**
+	 * Competitor speed modeled by a gaussian.
+	 */
+	private ContDistNormal speed;
 
-	// http://desmoj.sourceforge.net/doc/desmoj/core/dist/RealDistUniform.html
-	private ContDistUniform aimingTime;
+	/**
+	 * Speed factor that models competitors effort in the run.
+	 */
+    private float speedFactor = 1.0f;
 
-	private ContDistUniform accuracy;
+	/**
+	 * Competitor aiming time modeled by a gaussian.
+	 */
+	private ContDistNormal aimingTime;
 
+	/**
+	 * Aiming time factor that models competitors effort in the run.
+	 */
+    private float aimingFactor = 1.0f;
+
+	/**
+	 * Competitor accuracy modeled by a gaussian.
+	 */
+	private ContDistNormal accuracy;
+
+	/**
+	 * Accuracy factor that models competitors effort in the run.
+	 */
+    private float accuracyFactor = 1.0f;
+
+	/**
+	 * Competitor desperation modeled by uniformly distributed random variable (and miss/shot ratio).
+     * Determines wether a competitor starts hauling ass.
+	 */
+    private ContDistUniform desperation; // TODO Actually use this :D
+    private int currentDesperation = 0;
 
 	public Competitor(Model owner, String name, boolean showInTrace, int id) {
 		super(owner, name, showInTrace);
 		myModel = (Biathlon) owner;
 		logger = new Logger(String.format("competitor_%d.txt", id));
+        ID = id;
 
 		distanceToCover = Biathlon.INITIAL_DISTANCE;
 		shootingsLeft = Biathlon.NUM_SHOOTING_RANGES;
 
-		speed = new ContDistExponential(myModel, "Speed", 1.3, true, false);
-		aimingTime = new ContDistUniform(myModel, "Aiming", 5.0, 10.0, true, false);
-		accuracy = new ContDistUniform(myModel, "Accuracy", 0.0, Biathlon.SHOTS_PER_SHOOTING, true, false);
+		speed = new ContDistNormal(myModel, "Speed",
+                                            Biathlon.AVERAGE_SPEED,
+                                            (Biathlon.MAX_SPEED - Biathlon.MIN_SPEED)/2,
+                                            true, false);
+		aimingTime = new ContDistNormal(myModel, "Aiming",
+                                                 Biathlon.AVERAGE_SHOOTING_TIME,
+                                                 (Biathlon.MAX_SHOOTING_TIME-Biathlon.MIN_SHOOTING_TIME)/2,
+                                                 true, false);
 
+		accuracy = new ContDistNormal(myModel, "Accuracy",
+                                               Biathlon.AVERAGE_ACCURACY,
+                                               (Biathlon.MAX_ACCURACY-Biathlon.MIN_ACCURACY)/2,
+                                               true, false);
+        desperation = new ContDistUniform(myModel, "Desperation",
+                                                   Biathlon.MIN_DESPERATION,
+                                                   Biathlon.MAX_DESPERATION,
+                                                   true, false);
+
+        aimingTime.setNonNegative(true);
+        accuracy.setNonNegative(true);
 		speed.setNonNegative(true);
 	}
 
 
 	public void lifeCycle() {
 		while (distanceToCover > 0) {
-			hold(new TimeSpan(1));
+			hold(new TimeSpan(Biathlon.COMPETITOR_STEP_TIME));
 			run();
 
 			// strzelnica co 1/n dystansu (n = liczba strzelań)
@@ -58,18 +104,22 @@ public class Competitor extends SimProcess {
 			if (shootingsLeft > 0 && distanceToCover < nextShootingDist) {
 				--shootingsLeft;
 				myModel.competitorsQueue.insert(this);
+
 				if (!myModel.shootingRangeQueue.isEmpty()) {
 					ShootingRange shootingRange = myModel.shootingRangeQueue.first();
 					myModel.shootingRangeQueue.remove(shootingRange);
 					shootingRange.activateAfter(this);
-				}
 
-				passivate();
-				log("Visited shooting range.");
+    				log(String.format("Enters the shooting range for the %dth time.",
+                                      Biathlon.NUM_SHOOTING_RANGES - shootingsLeft));
+   				passivate(); // Simulates the actual shooting.
+    				log("Leaves the shooting range.");
+
+				}
 			}
 		}
 
-		log("Finished the competition!");
+		log("Finishes the competition!");
 //		logger.close();
 	}
 
@@ -80,27 +130,83 @@ public class Competitor extends SimProcess {
 
 	private void run() {
 		// TODO : jakieś magiczne symulacje
-		double dist = Helpers.clamp(speed.sample(), 0.5, 2.5);
+
+        double v = speed.sample() * speedFactor;
+
+		double dist = Helpers.clamp(v, Biathlon.MIN_SPEED, Biathlon.MAX_SPEED);
+
 		distanceToCover -= dist;
-		sendTraceNote(String.format("Distance left: %.2f", distanceToCover));
+
+        // Models linear change in these following parameters.
+        // TODO Move these to Biathlon class.
+        speedFactor *= 0.97f;
+        accuracyFactor *= 0.97f;
+        aimingFactor *= 1.03f;
 	}
 
 
-	public void addPenalty(int n) {
-		distanceToCover += n * Biathlon.PENALTY_DISTANCE;
+	public void addPenalties(int missed) {
+        double penalty = missed * Biathlon.PENALTY_DISTANCE;
+
+        log(String.format("Receives %.2f km penalty distance.", penalty));
+
+        if(missed != 0) {
+            // Add a little stress, what could possibly go wrong!?
+            int desperationGain = missed * Biathlon.DESPERATION_GAIN_PER_MISS;
+            currentDesperation = Helpers.clamp(currentDesperation + desperationGain,
+                                               Biathlon.MIN_DESPERATION,
+                                               Biathlon.MAX_DESPERATION);
+
+            log(String.format("Desperation increases to %d%%.", currentDesperation));
+
+            if(currentDesperation >= Biathlon.DESPERATION_THRESHOLD) {
+                log("Desperation increases past the panic treshold.");
+                log("Competitor starts to panic.");
+
+                speedFactor *= 1.2f;
+                accuracyFactor *= 0.85f;
+                aimingFactor *= 1.1f;
+            }
+            else {
+                speedFactor *= 1.1f;
+                aimingFactor *= 1.1f;
+                accuracyFactor *= 0.9f;
+            }
+        }
+        else {
+            speedFactor *= 0.9f;
+            aimingFactor *= 0.9f;
+            accuracyFactor *= 1.1f;
+        }
+
+        log(String.format("Speed factor changes to %.2f.", speedFactor));
+        log(String.format("Aiming time factor changes to %.2f.", aimingFactor));
+        log(String.format("Accuracy factor changes to %.2f.", accuracyFactor));
+
+		distanceToCover += penalty;
 	}
 
 
 	public int computeShotsMissed(ShootingRange shootingRange) {
 		// TODO : jakieś magiczne symulacje
-		int missed = Math.round(accuracy.sample().floatValue());
-		sendTraceNote(String.format("Missed: %d", missed));
+
+        int sps = Biathlon.SHOTS_PER_SHOOTING;
+		int missed = Math.round(Helpers.clamp(sps-(accuracy.sample().floatValue() * sps * accuracyFactor),
+                                              0.0f,
+                                              Biathlon.SHOTS_PER_SHOOTING));
+
+		log(String.format("Missed %d times.", missed));
 		return missed;
 	}
 
 
 	public TimeSpan computeShootingTime() {
 		// TODO : jakieś magiczne symulacje
-		return aimingTime.sampleTimeSpan();
+
+		return new TimeSpan(aimingTime.sample() * aimingFactor);
 	}
+
+    public String toString() {
+        return String.format("Competitor_%d", ID);
+    }
 }
