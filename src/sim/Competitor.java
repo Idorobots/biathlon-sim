@@ -9,6 +9,7 @@ import desmoj.core.simulator.TimeSpan;
 public class Competitor extends SimProcess {
 
 	private Biathlon myModel;
+	private Logger logger;
 
 	/**
 	 * Dystans pozostały wciąż do przebycia.
@@ -29,9 +30,10 @@ public class Competitor extends SimProcess {
 	private ContDistUniform accuracy;
 
 
-	public Competitor(Model owner, String name, boolean showInTrace) {
+	public Competitor(Model owner, String name, boolean showInTrace, int id) {
 		super(owner, name, showInTrace);
 		myModel = (Biathlon) owner;
+		logger = new Logger(String.format("competitor_%d.txt", id));
 
 		distanceToCover = Biathlon.INITIAL_DISTANCE;
 		shootingsLeft = Biathlon.NUM_SHOOTING_RANGES;
@@ -46,8 +48,6 @@ public class Competitor extends SimProcess {
 
 	public void lifeCycle() {
 		while (distanceToCover > 0) {
-			if (!Biathlon.inDebugMode)
-				skipTraceNote();
 			hold(new TimeSpan(1));
 			run();
 
@@ -64,18 +64,19 @@ public class Competitor extends SimProcess {
 					shootingRange.activateAfter(this);
 				}
 
-				if (!Biathlon.inDebugMode)
-					skipTraceNote();
 				passivate();
-				sendTraceNote("Visited shooting range.");
+				log("Visited shooting range.");
 			}
 		}
 
-		sendTraceNote("Finished the competition!");
-		if (!Biathlon.inDebugMode)
-			skipTraceNote();
+		log("Finished the competition!");
+//		logger.close();
 	}
 
+	private void log(String message) {
+		String msgWithTime = String.format("[ %8s ]\t%s", this.presentTime().toString(), message);
+		logger.log(msgWithTime);
+	}
 
 	private void run() {
 		// TODO : jakieś magiczne symulacje

@@ -1,4 +1,5 @@
 package sim;
+
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
 
@@ -16,9 +17,7 @@ public class CompetitorGenerator extends SimProcess {
 		Biathlon model = (Biathlon) getModel();
 
 		for (int i = 0; i < Biathlon.NUM_COMPETITORS; i++) {
-			Competitor competitor = new Competitor(model, "Competitor", true);
-			if (!Biathlon.inDebugMode)
-				skipTraceNote();
+			Competitor competitor = new Competitor(model, "Competitor", true, i + 1);
 			competitor.activateAfter(this);
 		}
 	}

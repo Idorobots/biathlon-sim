@@ -14,9 +14,6 @@ public class Biathlon extends Model {
 	protected static final double INITIAL_DISTANCE = 10;
 	protected static final double PENALTY_DISTANCE = 5;
 
-	protected static final boolean showInTrace = false;
-	protected static final boolean inDebugMode = false;
-
 	/**
 	 * Zawodnicy czekajacy na strzelanie.
 	 */
@@ -36,23 +33,23 @@ public class Biathlon extends Model {
 
 
 	public void doInitialSchedules() {
-		ShootingRange shootingRange = new ShootingRange(this, "Shooting Range", showInTrace);
+		ShootingRange shootingRange = new ShootingRange(this, "Shooting Range", true);
 		shootingRange.activate();
 
-		CompetitorGenerator generator = new CompetitorGenerator(this, "BiathlonStart", showInTrace);
+		CompetitorGenerator generator = new CompetitorGenerator(this, "BiathlonStart", true);
 		generator.activate();
 	}
 
 
 	public void init() {
-		competitorsQueue = new ProcessQueue<Competitor>(this, "Competitors Queue", true, showInTrace);
-		shootingRangeQueue = new ProcessQueue<ShootingRange>(this, "ShootingRange Queue", true, showInTrace);
+		competitorsQueue = new ProcessQueue<Competitor>(this, "Competitors Queue", true, true);
+		shootingRangeQueue = new ProcessQueue<ShootingRange>(this, "ShootingRange Queue", true, true);
 	}
 
 
 	public static void main(java.lang.String[] args) {
 
-		Biathlon model = new Biathlon(null, "ProcessesExample", true, Biathlon.showInTrace);
+		Biathlon model = new Biathlon(null, "ProcessesExample", true, true);
 		Experiment exp = new Experiment("Biathlon");
 		model.connectToExperiment(exp);
 
@@ -63,7 +60,6 @@ public class Biathlon extends Model {
 		exp.debugOn(simStartTime);
 
 		exp.start();
-		exp.report();
 		exp.finish();
 
 		System.exit(0);

@@ -25,8 +25,6 @@ public class ShootingRange extends SimProcess {
 				myModel.competitorsQueue.remove(nextCompetitor);
 
 				nextCompetitor.addPenalty(nextCompetitor.computeShotsMissed(this));
-				if (!Biathlon.inDebugMode)
-					skipTraceNote();
 				nextCompetitor.activate(nextCompetitor.computeShootingTime());
 			}
 		}
