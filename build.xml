@@ -36,6 +36,7 @@
 	</target>
 
 	<target name="run" depends="jar">
+		<delete dir="log" />
 		<mkdir dir="log" />
 		<java jar="bin/jar/Simulation.jar" fork="true">
 			<classpath refid="external-libs" />

@@ -8,17 +8,17 @@ import desmoj.core.simulator.SimProcess;
  */
 public class CompetitorGenerator extends SimProcess {
 
-	public CompetitorGenerator(Model owner, String name, boolean showInTrace) {
-		super(owner, name, showInTrace);
-	}
+    public CompetitorGenerator(Model owner, String name, boolean showInTrace) {
+        super(owner, name, showInTrace);
+    }
 
 
-	public void lifeCycle() {
-		Biathlon model = (Biathlon) getModel();
+    public void lifeCycle() {
+        Biathlon model = (Biathlon) getModel();
 
-		for (int i = 0; i < Biathlon.NUM_COMPETITORS; i++) {
-			Competitor competitor = new Competitor(model, "Competitor", true, i + 1);
-			competitor.activateAfter(this);
-		}
-	}
+        for (int i = 0; i < Biathlon.NUM_COMPETITORS; i++) {
+            Competitor competitor = new Competitor(model, "Competitor", true, i + 1);
+            competitor.activateAfter(this);
+        }
+    }
 }
