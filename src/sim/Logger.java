@@ -57,8 +57,11 @@ public class Logger {
             return;
 
         try {
-            String simTime = Biathlon.getInstance().presentTime().toString();
-            writer.write(String.format("[ %8s ]\t%s\n", simTime, str));
+            long simTime = Biathlon.getInstance().presentTime().getTimeTruncated();
+            long mins = simTime / 60;
+            long secs = simTime % 60;
+
+            writer.write(String.format("[ %2d:%2d (%4d) ]\t%s\n", mins, secs, simTime, str));
             writer.flush();
         } catch (IOException e) {
             System.err.println(String.format("Error while writing to the log (%s).", logname));
