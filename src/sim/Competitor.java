@@ -89,33 +89,34 @@ public class Competitor extends SimProcess {
         while (distanceToCover > 0) {
             hold(new TimeSpan(Biathlon.COMPETITOR_STEP_TIME));
             run();
-
-            // strzelnica co 1/n dystansu (n = liczba strzelań)
-            double nextShootingDist = (shootingsLeft + 1) * Biathlon.INITIAL_DISTANCE
-                    / (Biathlon.NUM_SHOOTING_RANGES + 2);
-
-            if (shootingsLeft > 0 && distanceToCover < nextShootingDist) {
-                --shootingsLeft;
-                myModel.competitorsQueue.insert(this);
-
-                if (!myModel.shootingRangeQueue.isEmpty()) {
-                    ShootingRange shootingRange = myModel.shootingRangeQueue.first();
-                    myModel.shootingRangeQueue.remove(shootingRange);
-                    shootingRange.activateAfter(this);
-
-                    logger.log(String.format("Enters the shooting range for the %dth time.",
-                            Biathlon.NUM_SHOOTING_RANGES - shootingsLeft));
-                    passivate(); // Simulates the actual shooting.
-                    logger.log("Leaves the shooting range.");
-
-                }
-            }
+            doShooting();
         }
 
         logger.log("Finishes the competition!");
         // logger.close();
     }
 
+    private void doShooting() {
+        // strzelnica co 1/n dystansu (n = liczba strzelań)
+        double nextShootingDist = (shootingsLeft + 1) * Biathlon.INITIAL_DISTANCE
+                / (Biathlon.NUM_SHOOTING_RANGES + 2);
+
+        if (shootingsLeft > 0 && distanceToCover < nextShootingDist) {
+            --shootingsLeft;
+            myModel.competitorsQueue.insert(this);
+
+            if (!myModel.shootingRangeQueue.isEmpty()) {
+                ShootingRange shootingRange = myModel.shootingRangeQueue.first();
+                myModel.shootingRangeQueue.remove(shootingRange);
+                shootingRange.activateAfter(this);
+
+                logger.log(String.format("Enters the shooting range for the %dth time.",
+                       Biathlon.NUM_SHOOTING_RANGES - shootingsLeft));
+                passivate(); // Simulates the actual shooting.
+                logger.log("Leaves the shooting range.");
+            }
+        }
+    }
 
     private void run() {
         // TODO : jakieś magiczne symulacje
@@ -127,10 +128,9 @@ public class Competitor extends SimProcess {
         distanceToCover -= dist;
 
         // Models linear change in these following parameters.
-        // TODO Move these to Biathlon class.
-        speedFactor *= 0.98f;
-        accuracyFactor *= 0.98f;
-        aimingFactor *= 1.02f;
+        speedFactor *= Biathlon.SPEED_LOSS_FACTOR;
+        accuracyFactor *= Biathlon.ACCURACY_LOSS_FACTOR;
+        aimingFactor *= Biathlon.SHOOTING_TIME_GAIN_FACTOR;
     }
 
 
@@ -149,21 +149,18 @@ public class Competitor extends SimProcess {
 
             if (currentDesperation >= Biathlon.DESPERATION_THRESHOLD) {
                 logger.log("Desperation increases past the panic treshold.");
-                logger.log("Competitor starts to panic.");
+                logger.log("Competitor starts rushing.");
 
-                speedFactor *= 1.1f;
-                accuracyFactor *= 0.9f;
-                aimingFactor *= 1.1f;
-            } else {
-                speedFactor *= 1.05f;
-                aimingFactor *= 1.05f;
-                accuracyFactor *= 0.95f;
+                speedFactor *= Biathlon.PANIC_GAIN_MODIFIER;
+                accuracyFactor *= Biathlon.PANIC_LOSS_MODIFIER;
+                aimingFactor *= Biathlon.PANIC_GAIN_MODIFIER;
             }
-        } else {
-            speedFactor *= 0.95f;
-            aimingFactor *= 0.95f;
-            accuracyFactor *= 1.05f;
         }
+
+        // Competitor gets his score and acts accordingly.
+        speedFactor *= 1.0f - missed * Biathlon.SPEED_LOSS_PER_MISS;
+        aimingFactor *= 1.0f + missed * Biathlon.SHOOTING_TIME_GAIN_PER_MISS;
+        accuracyFactor *= 1.0f + missed * Biathlon.ACCURACY_GAIN_PER_MISS;
 
         logger.log(String.format("Speed factor changes to %.2f.", speedFactor));
         logger.log(String.format("Aiming time factor changes to %.2f.", aimingFactor));

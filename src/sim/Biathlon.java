@@ -15,23 +15,32 @@ public class Biathlon extends Model {
     protected static final float INITIAL_DISTANCE = 15f;
     protected static final float PENALTY_DISTANCE = 0.15f;
 
-    protected static final float MIN_ACCURACY = 0.9f;
-    protected static final float AVERAGE_ACCURACY = 0.95f;
-    protected static final float MAX_ACCURACY = 1.0f;
+    protected static final float MIN_ACCURACY = 0.95f;
+    protected static final float AVERAGE_ACCURACY = 1.0f;
+    protected static final float MAX_ACCURACY = 1.05f;
+    protected static final float ACCURACY_LOSS_FACTOR = 0.99f;
+    protected static final float ACCURACY_GAIN_PER_MISS = 0.02f;
 
     protected static final float MIN_SHOOTING_TIME = 2.2f;
     protected static final float AVERAGE_SHOOTING_TIME = 2.8f;
     protected static final float MAX_SHOOTING_TIME = 3.5f;
+    protected static final float SHOOTING_TIME_GAIN_FACTOR = 1.01f;
+    protected static final float SHOOTING_TIME_GAIN_PER_MISS = 0.05f;
 
     protected static final float MIN_SPEED = 0.65f;
     protected static final float AVERAGE_SPEED = 0.7f;
     protected static final float MAX_SPEED = 0.73f;
+    protected static final float SPEED_LOSS_FACTOR = 0.99f;
+    protected static final float SPEED_LOSS_PER_MISS = 0.02f;
 
     protected static final int MIN_DESPERATION = 0;
     protected static final int MAX_DESPERATION = 100;
     protected static final int DESPERATION_THRESHOLD = 95;
-    protected static final int DESPERATION_GAIN_PER_MISS = 5;
-    
+    protected static final int DESPERATION_GAIN_PER_MISS = 7;
+
+    protected static final float PANIC_GAIN_MODIFIER = 1.1f;
+    protected static final float PANIC_LOSS_MODIFIER = 0.9f;
+
     private static Biathlon instance = null;
 
     /**
@@ -45,7 +54,7 @@ public class Biathlon extends Model {
     private Biathlon(Model owner, String modelName, boolean showInReport, boolean showInTrace) {
         super(owner, modelName, showInReport, showInTrace);
     }
-    
+
     public static Biathlon getInstance() {
         if (instance == null)
             instance = new Biathlon(null, "Biathlon", true, true);
