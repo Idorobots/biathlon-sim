@@ -28,7 +28,7 @@ public class ShootingRange extends SimProcess {
 
                 myLogger.log(String.format("Competitor %s enters the shooting range.", nextCompetitor.toString()));
 
-                int misses = nextCompetitor.computeShotsMissed(this);
+                int misses = nextCompetitor.computeShotsMissed();
                 nextCompetitor.addPenalties(misses);
 
                 myLogger.log(String.format("Competitor %s misses %d times.", nextCompetitor.toString(), misses));

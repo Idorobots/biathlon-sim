@@ -12,53 +12,17 @@ public class Competitor extends SimProcess {
     private Logger logger;
     private int ID = -1;
 
-    /**
-     * Distance left to cover.
-     */
-    private double distanceToCover;
-
-    /**
-     * Number of shooting range visits before finishing the run.
-     */
-    private int shootingsLeft;
-
-    /**
-     * Competitor speed modeled by a gaussian.
-     */
-    private ContDistNormal speed;
-
-    /**
-     * Speed factor that models competitors effort in the run.
-     */
-    private float speedFactor = 1.0f;
-
-    /**
-     * Competitor aiming time modeled by a gaussian.
-     */
-    private ContDistNormal aimingTime;
-
-    /**
-     * Aiming time factor that models competitors effort in the run.
-     */
-    private float aimingFactor = 1.0f;
-
-    /**
-     * Competitor accuracy modeled by a gaussian.
-     */
-    private ContDistNormal accuracy;
-
-    /**
-     * Accuracy factor that models competitors effort in the run.
-     */
-    private float accuracyFactor = 1.0f;
-
-    /**
-     * Competitor desperation modeled by uniformly distributed random variable
-     * (and miss/shot ratio). Determines wether a competitor starts hauling ass.
-     */
-    private ContDistUniform desperation; // TODO Actually use this :D
-    private int currentDesperation = 0;
-
+    private double distanceToCover;      /// Distance left to cover.
+    private int shootingsLeft;           /// Number of shooting range visits before finishing the run.
+    private ContDistNormal speed;        /// Competitor speed modeled by a gaussian.
+    private float speedFactor = 1.0f;    /// Speed factor that models competitors effort in the run.
+    private ContDistNormal aimingTime;   /// Competitor aiming time modeled by a gaussian.
+    private float aimingFactor = 1.0f;   /// Aiming time factor that models competitors effort in the run.
+    private ContDistNormal accuracy;     /// Competitor accuracy modeled by a gaussian.
+    private float accuracyFactor = 1.0f; /// Accuracy factor that models competitors effort in the run.
+    private ContDistUniform desperation; /// Random desperation experienced at any time.
+    private int currentDesperation = 0;  /// Competitor desperation affecting his performance.
+    private boolean panic = false;       /// Flag determining wether a competitor is rushing to finish.
 
     public Competitor(Model owner, String name, boolean showInTrace, int id) {
         super(owner, name, showInTrace);
@@ -69,15 +33,17 @@ public class Competitor extends SimProcess {
         distanceToCover = Biathlon.INITIAL_DISTANCE;
         shootingsLeft = Biathlon.NUM_SHOOTING_RANGES;
 
-        speed = new ContDistNormal(myModel, "Speed", Biathlon.AVERAGE_SPEED,
-                (Biathlon.MAX_SPEED - Biathlon.MIN_SPEED) / 2, true, false);
-        aimingTime = new ContDistNormal(myModel, "Aiming", Biathlon.AVERAGE_SHOOTING_TIME,
-                (Biathlon.MAX_SHOOTING_TIME - Biathlon.MIN_SHOOTING_TIME) / 2, true, false);
+        speed = new ContDistNormal(myModel, "Speed", Biathlon.SPEED_MEAN,
+                                   Biathlon.SPEED_STD_DEV, true, false);
 
-        accuracy = new ContDistNormal(myModel, "Accuracy", Biathlon.AVERAGE_ACCURACY,
-                (Biathlon.MAX_ACCURACY - Biathlon.MIN_ACCURACY) / 2, true, false);
-        desperation = new ContDistUniform(myModel, "Desperation", Biathlon.MIN_DESPERATION, Biathlon.MAX_DESPERATION,
-                true, false);
+        aimingTime = new ContDistNormal(myModel, "Aiming", Biathlon.SHOOTING_TIME_MEAN,
+                                        Biathlon.SHOOTING_TIME_STD_DEV, true, false);
+
+        accuracy = new ContDistNormal(myModel, "Accuracy", Biathlon.ACCURACY_MEAN,
+                                      Biathlon.ACCURACY_STD_DEV, true, false);
+
+        desperation = new ContDistUniform(myModel, "Desperation", Biathlon.MIN_DESPERATION,
+                                          Biathlon.MAX_DESPERATION, true, false);
 
         aimingTime.setNonNegative(true);
         accuracy.setNonNegative(true);
@@ -86,17 +52,19 @@ public class Competitor extends SimProcess {
 
 
     public void lifeCycle() {
+        logger.log("Starts the competition!");
+
         while (distanceToCover > 0) {
-            hold(new TimeSpan(Biathlon.COMPETITOR_STEP_TIME));
+            hold(new TimeSpan(Biathlon.STEP_TIME));
             run();
-            doShooting();
+            shoot();
         }
 
         logger.log("Finishes the competition!");
         // logger.close();
     }
 
-    private void doShooting() {
+    private void shoot() {
         // strzelnica co 1/n dystansu (n = liczba strzelań)
         double nextShootingDist = (shootingsLeft + 1) * Biathlon.INITIAL_DISTANCE
                 / (Biathlon.NUM_SHOOTING_RANGES + 2);
@@ -112,7 +80,9 @@ public class Competitor extends SimProcess {
 
                 logger.log(String.format("Enters the shooting range for the %dth time.",
                        Biathlon.NUM_SHOOTING_RANGES - shootingsLeft));
+
                 passivate(); // Simulates the actual shooting.
+
                 logger.log("Leaves the shooting range.");
             }
         }
@@ -121,61 +91,59 @@ public class Competitor extends SimProcess {
     private void run() {
         // TODO : jakieś magiczne symulacje
 
-        double v = speed.sample() * speedFactor;
+        double v = computeSpeed() * Biathlon.STEP_TIME;
 
         double dist = Helpers.clamp(v, Biathlon.MIN_SPEED, Biathlon.MAX_SPEED);
 
         distanceToCover -= dist;
 
         // Models linear change in these following parameters.
-        speedFactor *= Biathlon.SPEED_LOSS_FACTOR;
-        accuracyFactor *= Biathlon.ACCURACY_LOSS_FACTOR;
-        aimingFactor *= Biathlon.SHOOTING_TIME_GAIN_FACTOR;
+        // TODO Needs a little tweaking.
+        speedFactor += Biathlon.SPEED_FACTOR_DELTA;
+        accuracyFactor += Biathlon.ACCURACY_FACTOR_DELTA;
+        aimingFactor += Biathlon.SHOOTING_TIME_FACTOR_DELTA;
     }
 
 
     public void addPenalties(int missed) {
         double penalty = missed * Biathlon.PENALTY_DISTANCE;
 
-        logger.log(String.format("Receives %.2f km penalty distance.", penalty));
+        logger.log(String.format("Receives %.0f m penalty distance.", penalty));
 
         if (missed != 0) {
             // Add a little stress, what could possibly go wrong!?
-            int desperationGain = missed * Biathlon.DESPERATION_GAIN_PER_MISS;
-            currentDesperation = Helpers.clamp(currentDesperation + desperationGain, Biathlon.MIN_DESPERATION,
-                    Biathlon.MAX_DESPERATION);
+            currentDesperation = Helpers.clamp(currentDesperation
+                                               + missed * Biathlon.DESPERATION_DELTA_PER_MISS, 0, 100);
 
             logger.log(String.format("Desperation increases to %d%%.", currentDesperation));
 
-            if (currentDesperation >= Biathlon.DESPERATION_THRESHOLD) {
+            if (computeDesperation() >= Biathlon.PANIC_THRESHOLD) {
                 logger.log("Desperation increases past the panic treshold.");
                 logger.log("Competitor starts rushing.");
 
-                speedFactor *= Biathlon.PANIC_GAIN_MODIFIER;
-                accuracyFactor *= Biathlon.PANIC_LOSS_MODIFIER;
-                aimingFactor *= Biathlon.PANIC_GAIN_MODIFIER;
+                panic = true;
             }
+
+            // Competitor gets his score and acts accordingly.
+            speedFactor += missed * Biathlon.SPEED_DELTA_PER_MISS;
+            aimingFactor += missed * Biathlon.SHOOTING_TIME_DELTA_PER_MISS;
+            accuracyFactor += missed * Biathlon.ACCURACY_DELTA_PER_MISS;
         }
 
-        // Competitor gets his score and acts accordingly.
-        speedFactor *= 1.0f - missed * Biathlon.SPEED_LOSS_PER_MISS;
-        aimingFactor *= 1.0f + missed * Biathlon.SHOOTING_TIME_GAIN_PER_MISS;
-        accuracyFactor *= 1.0f + missed * Biathlon.ACCURACY_GAIN_PER_MISS;
-
-        logger.log(String.format("Speed factor changes to %.2f.", speedFactor));
-        logger.log(String.format("Aiming time factor changes to %.2f.", aimingFactor));
-        logger.log(String.format("Accuracy factor changes to %.2f.", accuracyFactor));
+        logger.log(String.format("Speed factor is %.2f.", speedFactor));
+        logger.log(String.format("Aiming time factor is %.2f.", aimingFactor));
+        logger.log(String.format("Accuracy factor is %.2f.", accuracyFactor));
 
         distanceToCover += penalty;
     }
 
 
-    public int computeShotsMissed(ShootingRange shootingRange) {
-        // TODO : jakieś magiczne symulacje
-
+    public int computeShotsMissed() {
         int sps = Biathlon.SHOTS_PER_SHOOTING;
-        int missed = Math.round(Helpers.clamp(sps - (accuracy.sample().floatValue() * sps * accuracyFactor), 0.0f,
-                Biathlon.SHOTS_PER_SHOOTING));
+
+        float acc = (float) computeAccuracy(); // Haters gonna hate...
+
+        int missed = Math.round(Helpers.clamp(sps - (acc * sps), 0.0f, sps));
 
         logger.log(String.format("Missed %d times.", missed));
         return missed;
@@ -183,11 +151,41 @@ public class Competitor extends SimProcess {
 
 
     public TimeSpan computeShootingTime() {
-        // TODO : jakieś magiczne symulacje
+        double at = aimingTime.sample() * aimingFactor;
 
-        return new TimeSpan(aimingTime.sample() * aimingFactor);
+        if(panic) {
+            at *= Biathlon.PANIC_GAIN_MODIFIER; // Rushing...
+        }
+
+        return new TimeSpan(at);
     }
 
+
+    public double computeSpeed() {
+        double v = speed.sample() * speedFactor;
+
+        if(panic) {
+            v *= Biathlon.PANIC_GAIN_MODIFIER; // Rushing to the finish.
+        }
+
+        return v;
+    }
+
+
+    public double computeAccuracy() {
+        double acc = accuracy.sample() * accuracyFactor;
+
+        if(panic) {
+            acc *= Biathlon.PANIC_LOSS_MODIFIER;
+        }
+
+        return acc;
+    }
+
+
+    public int computeDesperation() {
+        return currentDesperation + (int) Math.round(desperation.sample());
+    }
 
     public String toString() {
         return String.format("Competitor_%d", ID);

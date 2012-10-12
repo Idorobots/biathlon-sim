@@ -6,48 +6,50 @@ import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.TimeInstant;
 
 public class Biathlon extends Model {
-
-    protected static final float COMPETITOR_STEP_TIME = 1.0f;
-    protected static final int NUM_COMPETITORS = 30;
-    protected static final int NUM_SHOOTING_RANGES = 4;
-    protected static final int SHOTS_PER_SHOOTING = 5;
-
-    protected static final float INITIAL_DISTANCE = 15f;
-    protected static final float PENALTY_DISTANCE = 0.15f;
-
-    protected static final float MIN_ACCURACY = 0.95f;
-    protected static final float AVERAGE_ACCURACY = 1.0f;
-    protected static final float MAX_ACCURACY = 1.05f;
-    protected static final float ACCURACY_LOSS_FACTOR = 0.99f;
-    protected static final float ACCURACY_GAIN_PER_MISS = 0.02f;
-
-    protected static final float MIN_SHOOTING_TIME = 2.2f;
-    protected static final float AVERAGE_SHOOTING_TIME = 2.8f;
-    protected static final float MAX_SHOOTING_TIME = 3.5f;
-    protected static final float SHOOTING_TIME_GAIN_FACTOR = 1.01f;
-    protected static final float SHOOTING_TIME_GAIN_PER_MISS = 0.05f;
-
-    protected static final float MIN_SPEED = 0.65f;
-    protected static final float AVERAGE_SPEED = 0.7f;
-    protected static final float MAX_SPEED = 0.73f;
-    protected static final float SPEED_LOSS_FACTOR = 0.99f;
-    protected static final float SPEED_LOSS_PER_MISS = 0.02f;
-
-    protected static final int MIN_DESPERATION = 0;
-    protected static final int MAX_DESPERATION = 100;
-    protected static final int DESPERATION_THRESHOLD = 95;
-    protected static final int DESPERATION_GAIN_PER_MISS = 7;
-
-    protected static final float PANIC_GAIN_MODIFIER = 1.1f;
-    protected static final float PANIC_LOSS_MODIFIER = 0.9f;
-
     private static Biathlon instance = null;
 
-    /**
-     * Zawodnicy czekajacy na strzelanie.
-     */
+    protected static final float STEP_TIME = 1.0f;                    /// Simulation step in seconds.
+
+    protected static final int NUM_COMPETITORS = 30;                  /// Number of competitors.
+    protected static final int NUM_SHOOTING_RANGES = 4;               /// Number of shooting ranges.
+    protected static final int SHOTS_PER_SHOOTING = 5;                /// Number of shots per shooting.
+
+    protected static final float INITIAL_DISTANCE = 15000f;           /// Initial distance in meters.
+    protected static final float PENALTY_DISTANCE = 150f;             /// Penalty distance in meters.
+
+    protected static final float ACCURACY_MEAN = 0.9f;                /// Mean for the accuracy model.
+    protected static final float ACCURACY_STD_DEV = 0.1f;             /// Stddev for the accuracy model.
+
+    protected static final float ACCURACY_FACTOR_DELTA = -0.0001f;    /// Accuracy loss over time.
+    protected static final float ACCURACY_DELTA_PER_MISS = -0.02f;    /// Accuracy "gain" per miss.
+
+    protected static final float SHOOTING_TIME_MEAN = 5.0f;           /// Mean for the shooting time model.
+    protected static final float SHOOTING_TIME_STD_DEV = 1.0f;        /// Stddev for the shootin time modl.
+
+    protected static final float SHOOTING_TIME_FACTOR_DELTA = 0.0001f;/// Shooting time "gain" over time.
+    protected static final float SHOOTING_TIME_DELTA_PER_MISS = 0.05f;/// Shooting time "gain" per miss.
+
+    protected static final float MIN_SPEED = 2.0f;                    /// Minimal speed of a competitor.
+    protected static final float MAX_SPEED = 10.0f;                   /// Maximal humanly possible speed.
+
+    protected static final float SPEED_MEAN = 8.0f;                   /// Mean in m/s for the speed model.
+    protected static final float SPEED_STD_DEV = 1.0f;                /// Stddev for the speed model.
+
+    protected static final float SPEED_FACTOR_DELTA = -0.0001f;       /// Speed loss over time.
+    protected static final float SPEED_DELTA_PER_MISS = -0.02f;       /// Speed loss per miss.
+
+    protected static final int MIN_DESPERATION = 2;                   /// Minimal random stress level.
+    protected static final int MAX_DESPERATION = 10;                  /// Maximal random stress level.
+    protected static final int DESPERATION_DELTA_PER_MISS = 7;        /// Stress level gain due to miss.
+
+    protected static final int PANIC_THRESHOLD = 95;                  /// Panic threshold.
+    protected static final float PANIC_GAIN_MODIFIER = 1.1f;          /// Modifier when stressed.
+    protected static final float PANIC_LOSS_MODIFIER = 0.9f;          /// Modifier when stressed.
+
+    /** Competitors queueing at the shooting range. */
     protected desmoj.core.simulator.ProcessQueue<Competitor> competitorsQueue;
 
+    /** Not really needed, no? */
     protected desmoj.core.simulator.ProcessQueue<ShootingRange> shootingRangeQueue;
 
 
@@ -88,8 +90,9 @@ public class Biathlon extends Model {
         Experiment exp = new Experiment("Biathlon");
         model.connectToExperiment(exp);
 
-        TimeInstant simStopTime = new TimeInstant(1500);
         TimeInstant simStartTime = new TimeInstant(0);
+        TimeInstant simStopTime = new TimeInstant(3000); // 50 minute span.
+
         exp.stop(simStopTime);
         exp.traceOn(simStartTime);
         exp.debugOn(simStartTime);
