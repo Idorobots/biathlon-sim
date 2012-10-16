@@ -99,8 +99,6 @@ public class Competitor extends SimProcess {
 
 
     private void run() {
-        // TODO : jakieś magiczne symulacje
-
         double v = computeSpeed() * Biathlon.STEP_TIME;
 
         double dist = Helpers.clamp(v, Biathlon.MIN_SPEED, Biathlon.MAX_SPEED);
@@ -116,6 +114,7 @@ public class Competitor extends SimProcess {
         // Check for random events.
         double totalTimePenalty = 0.0;
         for (RandomEvent e : RandomEvent.values()) {
+            // TODO : Tweak me! [hasHappened() modifier; optional]
             if (e.hasHappened(0.0)) {
                 TimeSpan duration = e.getDuration();
                 int desperationMod = e.getDesperationMod();
