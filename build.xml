@@ -1,4 +1,4 @@
-<project>
+<project name="Biathlon simulation" default="run">
 
 	<!-- External JARs included into classpath -->
 	<path id="external-libs">
