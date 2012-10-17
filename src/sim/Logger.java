@@ -8,24 +8,31 @@ import java.io.IOException;
 /**
  * The <code>Logger</code> class provides a convenient way of creating and
  * managing a log file.
- *
+ * 
  * @author Pawel Kleczek
  * @version 0.1
  * @since 10-10-2012
- *
+ * 
  */
 public class Logger {
 
     private BufferedWriter writer;
+
+    /**
+     * Name of the log file (may also include a file extension).
+     */
     private final String logname;
 
 
     /**
      * Creates a new <code>Logger</code> instance and associates it with a newly
-     * created file specified by the given filename (the file is created in the
-     * <i>log</i> directory).
-     *
-     * @param filename Name of the log file.
+     * created file specified by the given filename
+     * <p>
+     * The file is created in the <i>log</i> directory. Any previous log with
+     * the given name is overwritten.
+     * 
+     * @param filename
+     *            Name of the log file.
      */
     public Logger(String filename) {
         logname = filename;
@@ -44,10 +51,12 @@ public class Logger {
 
 
     /**
-     * Writes a string.<br>
+     * Writes a string.
+     * <p>
      * Note that a newline character is added at the end of the string.
-     *
-     * @param str String to be written.
+     * 
+     * @param str
+     *            String to be written.
      */
     public void log(String str) {
 
@@ -69,6 +78,7 @@ public class Logger {
 
     @Override
     protected void finalize() throws Throwable {
+        // Clean-up.
         writer.close();
         super.finalize();
     }

@@ -194,8 +194,7 @@ public class Competitor extends SimProcess {
                 totalTimePenalty += duration.getTimeAsDouble();
                 currentDesperation += desperationMod;
 
-                // TODO : do better formatting
-                logger.log(String.format("Random event (%s) happened (duration : %s ; desperation : +%d).",
+                logger.log(String.format("Random event - %s. [t= %s , desp +%d].",
                         e.toString(), duration.toString(), desperationMod));
             }
         }

@@ -150,7 +150,10 @@ public class Biathlon extends Model {
     protected desmoj.core.simulator.ProcessQueue<Competitor> competitorsQueue;
 
     /**
-     * Not really needed, no?
+     * A queue of "idle" shooting ranges.
+     * <p>
+     * This solution may seem unnecessary, but it was implemented to avoid busy
+     * waiting and some minor synchronization problems.
      */
     protected desmoj.core.simulator.ProcessQueue<ShootingRange> shootingRangeQueue;
 
@@ -174,7 +177,19 @@ public class Biathlon extends Model {
      * @return The description of the Biathlon model.
      */
     public String description() {
-        return "<description>";
+        // TODO: dokończyć (wpływ desperacji itp.)
+        return String.format("This is a model of a biathlon mass-start" +
+        		"competition. A certain number of competitors (%d) participate" +
+        		"in such an event and every one of them has to cover a certain" +
+        		"distance (%dm) as fast as they can. During the run, in equal" +
+        		"distance intervals, competitors have to visit a shooting range" +
+        		" (total of %d times) and each time they shoot %d bullets. For" +
+        		"every miss they have to cover additional %dm. The competitor's" +
+        		" performance is modelled by the speed factor and the accuracy " +
+        		" (both decrease linearly during the physical effort) and is " +
+        		"also affected by an additional parameter, the desperation. " +
+        		"Desperation is a result of adversities such as misses, fells " +
+        		"or problems with skis.", Biathlon.NUM_COMPETITORS, (int) Biathlon.INITIAL_DISTANCE, Biathlon.NUM_SHOOTING_RANGES, Biathlon.SHOTS_PER_SHOOTING, (int) Biathlon.PENALTY_DISTANCE);
     }
 
     /**
@@ -213,7 +228,7 @@ public class Biathlon extends Model {
         Biathlon model = Biathlon.getInstance();
         Experiment exp = new Experiment("Biathlon");
         model.connectToExperiment(exp);
-
+        
         TimeInstant simStartTime = new TimeInstant(0);
         TimeInstant simStopTime = new TimeInstant(3000); // 50 minute span.
 
@@ -223,6 +238,8 @@ public class Biathlon extends Model {
 
         exp.start();
         exp.finish();
+        
+        // TODO: generowanie wyników biegu (statystyki najlepszych graczy)
 
         System.exit(0);
     }
