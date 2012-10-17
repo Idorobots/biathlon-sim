@@ -3,19 +3,30 @@ package sim;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
 
+/**
+ * Models a shooting range session.
+ * Each <code>Competitor</code> enters a <code>ShootingRange</code> and performs shooting.
+ */
 public class ShootingRange extends SimProcess {
 
     private Biathlon myModel;
     private Logger myLogger;
 
-
+    /**
+     * The c-tor.
+     * @param owner The model owning this process.
+     * @param name The name of this process.
+     * @param showInTrace The flag toggling tracing for this process.
+     */
     public ShootingRange(Model owner, String name, boolean showInTrace) {
         super(owner, name, showInTrace);
         myModel = (Biathlon) owner;
         myLogger = new Logger("ShootingRange.txt");
     }
 
-
+    /**
+     * Implements the lifecycle of this process.
+     */
     public void lifeCycle() {
 
         while (true) {
