@@ -6,34 +6,100 @@ import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
 import desmoj.core.simulator.TimeSpan;
 
+/**
+ * The core of the simulation.
+ *
+ * Models the biathlete process - running, shooting at the <code>ShootingRange</code>,
+ * tiredness (attribute change over time), stress (randomized panic level) and various
+ * random events.
+ */
 public class Competitor extends SimProcess {
 
     private Biathlon myModel;
     private Logger logger;
     private int ID = -1;
 
-    private double distanceToCover; // / Distance left to cover.
-    private int shootingsLeft; // / Number of shooting range visits before
-                               // finishing the run.
-    private ContDistNormal speed; // / Competitor speed modeled by a gaussian.
-    private float speedFactor = 1.0f; // / Speed factor that models competitors
-                                      // effort in the run.
-    private ContDistNormal aimingTime; // / Competitor aiming time modeled by a
-                                       // gaussian.
-    private float aimingFactor = 1.0f; // / Aiming time factor that models
-                                       // competitors effort in the run.
-    private ContDistNormal accuracy; // / Competitor accuracy modeled by a
-                                     // gaussian.
-    private float accuracyFactor = 1.0f; // / Accuracy factor that models
-                                         // competitors effort in the run.
-    private ContDistUniform desperation; // / Random desperation experienced at
-                                         // any time.
-    private int currentDesperation = 0; // / Competitor desperation affecting
-                                        // his performance.
-    private boolean panic = false; // / Flag determining wether a competitor is
-                                   // rushing to finish.
+    /**
+     * The distance left to cover given in meters (1.0 == 1 meter).
+     */
+    private double distanceToCover;
 
+    /**
+     * The number of shooting sessions left before finishing the run.
+     */
+    private int shootingsLeft;
 
+    /**
+     * Normal distribution of this biathletes speed.
+     * Parameterized with <code>Biathlon.SPEED_MEAN</code> and
+     * <code>Biathlon.SPEED_STD_DEV</code>.
+     */
+    private ContDistNormal speed;
+
+    /**
+     * Speed modifier used by various models (e.g. tiredness of a competitor).
+     * It modifies the values sampled from <code>speed</code>.
+     */
+    private float speedFactor = 1.0f;
+
+    /**
+     * Aiming time normal distribution.
+     * Parameterize with <code>Biathlon.SHOOTING_TIME_MEAN</code> and
+     * <code>Biathlon.SHOOTING_TIME_STD_DEV</code>.
+     */
+    private ContDistNormal aimingTime;
+
+    /**
+     * Aiming time modifier used by various models.
+     * It modifies the values sampled from <code>aimingTime</code>.
+     */
+    private float aimingFactor = 1.0f;
+
+    /**
+     * The accuracy normal distribution.
+     * Parameterized by <code>Biathlon.ACCURACY_MEAN</code> and
+     * <code>Biathlon.ACCURACY_STD_DEV</code>.
+     */
+    private ContDistNormal accuracy;
+
+    /**
+     * Accuracy modifier used by various models.
+     * It modifies the values sampled from <code>accuracy</code>.
+     */
+    private float accuracyFactor = 1.0f;
+
+    /**
+     * A uniformly distributed random stress level.
+     * Used by the stress model to add additional, random noise to the simulation.
+     * Parameterized by <code>Biathlon.MIN_DESPERATION</code> and
+     * <code>Biathlon.MAX_DESPERATION</code>.
+     */
+    private ContDistUniform desperation;
+
+    /**
+     * The current stress level of a competitor, used by the stress model.
+     *
+     * Once it reaches the <code>Biathlon.PANIC_THRESHOLD</code> the competitor
+     * will start rushing to the finish line.
+     * The changes to this parameter happen over time caused by random events
+     * and shot misses.
+     */
+    private int currentDesperation = 0;
+
+    /**
+     * Flag determining wether a competitors <code>currentDesperation</code>
+     * reached the <code>Biathlon.PANIC_THRESHOLD</code>.
+     */
+    private boolean panic = false;
+
+    /**
+     * The c-tor.
+     *
+     * @param owner The model owning this process.
+     * @param name The name of this proccess.
+     * @param showInTrace A flag toggling tracing in this process.
+     * @param id The identification number of this competitor.
+     */
     public Competitor(Model owner, String name, boolean showInTrace, int id) {
         super(owner, name, showInTrace);
         myModel = (Biathlon) owner;
@@ -59,7 +125,9 @@ public class Competitor extends SimProcess {
         speed.setNonNegative(true);
     }
 
-
+    /**
+     * Implements the frame life cycle of this process.
+     */
     public void lifeCycle() {
         logger.log("Starts the competition!");
 
@@ -73,7 +141,9 @@ public class Competitor extends SimProcess {
         // logger.close();
     }
 
-
+    /**
+     * Implements the shooting sessions performed by the biathlete.
+     */
     private void shoot() {
         // strzelnica co 1/n dystansu (n = liczba strzelań)
         double nextShootingDist = (shootingsLeft + 1) * Biathlon.INITIAL_DISTANCE / (Biathlon.NUM_SHOOTING_RANGES + 2);
@@ -97,7 +167,10 @@ public class Competitor extends SimProcess {
         }
     }
 
-
+    /**
+     * Implements the running performed by the biathlete.
+     * Contains the tiredness, stress and random event simulation.
+     */
     private void run() {
         double v = computeSpeed() * Biathlon.STEP_TIME;
 
@@ -106,7 +179,6 @@ public class Competitor extends SimProcess {
         distanceToCover -= dist;
 
         // Models linear change in these following parameters.
-        // TODO Needs a little tweaking.
         speedFactor += Biathlon.SPEED_FACTOR_DELTA;
         accuracyFactor += Biathlon.ACCURACY_FACTOR_DELTA;
         aimingFactor += Biathlon.SHOOTING_TIME_FACTOR_DELTA;
@@ -130,7 +202,12 @@ public class Competitor extends SimProcess {
         hold(new TimeSpan(totalTimePenalty));
     }
 
-
+    /**
+     * Adds penalties related to the number of missed shots, such as penalty distance
+     * and additional stress.
+     *
+     * @param missed The number of shots missed in a shooting session.
+     */
     public void addPenalties(int missed) {
         double penalty = missed * Biathlon.PENALTY_DISTANCE;
 
@@ -164,6 +241,12 @@ public class Competitor extends SimProcess {
     }
 
 
+    /**
+     * Computes the number of missed shots in a shooting session.
+     * Uses <code>accuracy</code> model.
+     *
+     * @return The number of missed shots in a shooting session.
+     */
     public int computeShotsMissed() {
         int sps = Biathlon.SHOTS_PER_SHOOTING;
 
@@ -175,7 +258,12 @@ public class Competitor extends SimProcess {
         return missed;
     }
 
-
+    /**
+     * Computes the time spent on a shooting range modified by all the relevant models.
+     * Uses <code>aimingTime</code> model.
+     *
+     * @return The <code>TimeSpan</code> spent shooting.
+     */
     public TimeSpan computeShootingTime() {
         double at = aimingTime.sample() * aimingFactor;
 
@@ -186,7 +274,12 @@ public class Competitor extends SimProcess {
         return new TimeSpan(at);
     }
 
-
+    /**
+     * Computes the speed of a competitor modified by all the relevant models.
+     * Uses <code>speed</code>.
+     *
+     * @return The instantaneus speed of the competitor.
+     */
     public double computeSpeed() {
         double v = speed.sample() * speedFactor;
 
@@ -197,7 +290,12 @@ public class Competitor extends SimProcess {
         return v;
     }
 
-
+    /**
+     * Computes the accuracy of a competitor modified by all the relevant models.
+     * Uses <code>accuracy</code>.
+     *
+     * @return The value of accuracy (in range [0, 1]) of the competitor.
+     */
     public double computeAccuracy() {
         double acc = accuracy.sample() * accuracyFactor;
 
@@ -208,12 +306,21 @@ public class Competitor extends SimProcess {
         return acc;
     }
 
-
+    /**
+     * Computes the stress level of a competitor modifed by all the relevant models.
+     * Uses <code>desperation</code>.
+     *
+     * @return Current stress level of the competitor.
+     */
     public int computeDesperation() {
         return currentDesperation + (int) Math.round(desperation.sample());
     }
 
-
+    /**
+     * Returns the <code>String</code> representation of thys competitor.
+     *
+     * @return A string identifing this competitor.
+     */
     public String toString() {
         return String.format("Competitor_%d", ID);
     }
