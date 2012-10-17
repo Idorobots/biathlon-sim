@@ -50,7 +50,7 @@ public class Biathlon extends Model {
     /**
      * The mean for the accuracy normal distribution model of the competitors.
      */
-    public static final float ACCURACY_MEAN = 0.9f;
+    public static final float ACCURACY_MEAN = 0.90f;
 
     /**
      * The standard deviation for the accuracy normal distribution model.
@@ -233,7 +233,7 @@ public class Biathlon extends Model {
         Biathlon model = Biathlon.getInstance();
         Experiment exp = new Experiment("Biathlon");
         model.connectToExperiment(exp);
-        
+
         TimeInstant simStartTime = new TimeInstant(0);
         TimeInstant simStopTime = new TimeInstant(3000); // 50 minute span.
 
@@ -243,8 +243,8 @@ public class Biathlon extends Model {
 
         exp.start();
         exp.finish();
-        
-        // TODO: generowanie wyników biegu (statystyki najlepszych graczy)
+
+        Results.getInstance().dumpResults("results.txt");
 
         System.exit(0);
     }

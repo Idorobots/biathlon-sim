@@ -138,8 +138,7 @@ public class Competitor extends SimProcess {
         }
 
         logger.log("Finishes the competition!");
-        // registerFinish(ID);
-        // logger.close();
+        Results.getInstance().registerFinish(ID);
     }
 
     /**
@@ -258,6 +257,8 @@ public class Competitor extends SimProcess {
         int missed = Math.round(Helpers.clamp(sps - (acc * sps), 0.0f, sps));
 
         logger.log(String.format("Missed %d times.", missed));
+        Results.getInstance().registerMisses(ID, missed);
+
         return missed;
     }
 
@@ -325,6 +326,6 @@ public class Competitor extends SimProcess {
      * @return A string identifing this competitor.
      */
     public String toString() {
-        return String.format("Competitor_%d", ID);
+        return String.format("Competitor #%d", ID+1);
     }
 }

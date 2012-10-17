@@ -67,7 +67,7 @@ public class Logger {
             long mins = simTime / 60;
             long secs = simTime % 60;
 
-            writer.write(String.format("%02d:%02d (%4d)\t%s\n", mins, secs, simTime, str));
+            writer.write(String.format("%02d:%02d \t%s\n", mins, secs, str));
             writer.flush();
         } catch (IOException e) {
             System.err.println(String.format("Error while writing to the log (%s).", logname));

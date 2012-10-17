@@ -26,7 +26,10 @@ public class CompetitorGenerator extends SimProcess {
         Biathlon model = (Biathlon) getModel();
 
         for (int i = 0; i < Biathlon.NUM_COMPETITORS; i++) {
-            Competitor competitor = new Competitor(model, "Competitor", true, i + 1);
+            Competitor competitor = new Competitor(model, "Competitor", true, i);
+
+            Results.getInstance().registerCompetitor(i, competitor.toString());
+
             competitor.activateAfter(this);
         }
     }
