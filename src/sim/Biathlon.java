@@ -65,12 +65,12 @@ public class Biathlon extends Model {
     /**
      * The mean for the shooting time normal distribution of the competitors.
      */
-    public static final float SHOOTING_TIME_MEAN = 5.0f;
+    public static final float SHOOTING_TIME_MEAN = 2.0f;
 
     /**
      * The standard deviation of the shooting time normal distribution.
      */
-    public static final float SHOOTING_TIME_STD_DEV = 1.0f;
+    public static final float SHOOTING_TIME_STD_DEV = 0.5f;
 
     /**
      * Shooting time change over time. Used by the tiredness model.
@@ -85,7 +85,7 @@ public class Biathlon extends Model {
     /**
      * Minimal valid speed of a competitor. Given in meters per second (1.0f == 1 m/s).
      */
-    public static final float MIN_SPEED = 2.0f;
+    public static final float MIN_SPEED = 1.0f;
 
     /**
      * Maximal humanly possible speed of a competitor. Given in meters per second (1.0f == 1 m/s).
@@ -95,12 +95,12 @@ public class Biathlon extends Model {
     /**
      * The mean of the competitor speed normal distribution. In meters per second.
      */
-    public static final float SPEED_MEAN = 8.0f;
+    public static final float SPEED_MEAN = 8.5f;
 
     /**
      * The standard deviation of the competitor speed normal distribution.
      */
-    public static final float SPEED_STD_DEV = 1.0f;
+    public static final float SPEED_STD_DEV = 0.5f;
 
     /**
      * Speed change over time. Used by the tiredness model.
