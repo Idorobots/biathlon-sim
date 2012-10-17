@@ -2,6 +2,7 @@ package sim;
 
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
+import desmoj.core.simulator.TimeSpan;
 
 /**
  * Models a shooting range session.
@@ -37,18 +38,27 @@ public class ShootingRange extends SimProcess {
                 Competitor nextCompetitor = myModel.competitorsQueue.first();
                 myModel.competitorsQueue.remove(nextCompetitor);
 
-                myLogger.log(String.format("Competitor %s enters the shooting range.", nextCompetitor.toString()));
+                myLogger.log(String.format("Competitor %s enters the shooting range.",
+                                           nextCompetitor.toString()));
 
                 int misses = nextCompetitor.computeShotsMissed();
                 nextCompetitor.addPenalties(misses);
 
-                myLogger.log(String.format("Competitor %s misses %d times.", nextCompetitor.toString(), misses));
-
                 // Models concrete shooting time.
-                nextCompetitor.activate(nextCompetitor.computeShootingTime());
+                TimeSpan time = nextCompetitor.computeShootingTime();
+                nextCompetitor.activate(time);
 
-                // myLogger.log(String.format("Competitor %s leaves the shooting range.",
-                // nextCompetitor.toString()));
+                long simTime = Biathlon.getInstance().presentTime().getTimeTruncated();
+                long timeVal = time.getTimeTruncated();
+                long allTime = timeVal + simTime;
+
+                // FIXME These two show unordered in the log.
+                // FIXME Add a log queue?
+                myLogger.log(allTime, String.format("Competitor %s misses %d times.",
+                                                    nextCompetitor.toString(), misses));
+
+                myLogger.log(allTime, String.format("Competitor %s leaves the shooting range.",
+                                                    nextCompetitor.toString()));
             }
         }
     }

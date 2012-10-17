@@ -51,28 +51,37 @@ public class Logger {
 
 
     /**
-     * Writes a string.
+     * Writes a string at a given time.
      * <p>
      * Note that a newline character is added at the end of the string.
      * 
-     * @param str
-     *            String to be written.
+     * @param simTime Exact simulation time in seconds.
+     * @param str String to be written.
      */
-    public void log(String str) {
+    public void log(long simTime, String str) {
 
         if (writer == null)
             return;
 
         try {
-            long simTime = Biathlon.getInstance().presentTime().getTimeTruncated();
             long mins = simTime / 60;
             long secs = simTime % 60;
 
-            writer.write(String.format("%2d:%02d (%4d)\t%s\n", mins, secs, simTime, str));
+            writer.write(String.format("%02d:%02d (%4d)\t%s\n", mins, secs, simTime, str));
             writer.flush();
         } catch (IOException e) {
             System.err.println(String.format("Error while writing to the log (%s).", logname));
         }
+    }
+
+    /**
+     * Writes a string.
+     * <p>
+     * @param str String to be written.
+     */
+    public void log(String str) {
+        long simTime = Biathlon.getInstance().presentTime().getTimeTruncated();
+        log(simTime, str);
     }
 
 

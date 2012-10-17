@@ -133,11 +133,12 @@ public class Competitor extends SimProcess {
 
         while (distanceToCover > 0) {
             hold(new TimeSpan(Biathlon.STEP_TIME));
-            run();
             shoot();
+            run();
         }
 
         logger.log("Finishes the competition!");
+        // registerFinish(ID);
         // logger.close();
     }
 
@@ -194,10 +195,20 @@ public class Competitor extends SimProcess {
                 totalTimePenalty += duration.getTimeAsDouble();
                 currentDesperation += desperationMod;
 
-                logger.log(String.format("Random event - %s. [t= %s , desp +%d].",
+                logger.log(String.format("Random event occurs - %s. [t= %s , desp +%d].",
                         e.toString(), duration.toString(), desperationMod));
+
+                logger.log(String.format("Desperation increases to %d%%.", currentDesperation));
             }
         }
+
+        if (!panic && computeDesperation() >= Biathlon.PANIC_THRESHOLD) {
+            logger.log("Desperation increases past the panic treshold.");
+            logger.log("Competitor starts rushing.");
+
+            panic = true;
+        }
+
         hold(new TimeSpan(totalTimePenalty));
     }
 
@@ -218,13 +229,6 @@ public class Competitor extends SimProcess {
                     100);
 
             logger.log(String.format("Desperation increases to %d%%.", currentDesperation));
-
-            if (computeDesperation() >= Biathlon.PANIC_THRESHOLD) {
-                logger.log("Desperation increases past the panic treshold.");
-                logger.log("Competitor starts rushing.");
-
-                panic = true;
-            }
 
             // Competitor gets his score and acts accordingly.
             speedFactor += missed * Biathlon.SPEED_DELTA_PER_MISS;

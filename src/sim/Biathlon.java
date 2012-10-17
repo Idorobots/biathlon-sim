@@ -70,22 +70,22 @@ public class Biathlon extends Model {
     /**
      * The mean for the shooting time normal distribution of the competitors.
      */
-    public static final float SHOOTING_TIME_MEAN = 2.0f;
+    public static final float SHOOTING_TIME_MEAN = 25.0f;
 
     /**
      * The standard deviation of the shooting time normal distribution.
      */
-    public static final float SHOOTING_TIME_STD_DEV = 0.5f;
+    public static final float SHOOTING_TIME_STD_DEV = 4.0f;
 
     /**
      * Shooting time change over time. Used by the tiredness model.
      */
-    public static final float SHOOTING_TIME_FACTOR_DELTA = 0.0001f;
+    public static final float SHOOTING_TIME_FACTOR_DELTA = 0.0f;//0.0001f;
 
     /**
      * Shooting time change per missed shot. Used by the tiredness model.
      */
-    public static final float SHOOTING_TIME_DELTA_PER_MISS = 0.05f;
+    public static final float SHOOTING_TIME_DELTA_PER_MISS = 0.02f;
 
     /**
      * Minimal valid speed of a competitor. Given in meters per second (1.0f == 1 m/s).
@@ -95,17 +95,17 @@ public class Biathlon extends Model {
     /**
      * Maximal humanly possible speed of a competitor. Given in meters per second (1.0f == 1 m/s).
      */
-    public static final float MAX_SPEED = 10.0f;
+    public static final float MAX_SPEED = 12.0f;
 
     /**
      * The mean of the competitor speed normal distribution. In meters per second.
      */
-    public static final float SPEED_MEAN = 8.5f;
+    public static final float SPEED_MEAN = 8.88f;
 
     /**
      * The standard deviation of the competitor speed normal distribution.
      */
-    public static final float SPEED_STD_DEV = 0.5f;
+    public static final float SPEED_STD_DEV = 1.0f;
 
     /**
      * Speed change over time. Used by the tiredness model.
@@ -135,7 +135,7 @@ public class Biathlon extends Model {
     /**
      * Panic threshold - the minimal stress value causing a competitor to go batshit crazy.
      */
-    public static final int PANIC_THRESHOLD = 95;
+    public static final int PANIC_THRESHOLD = 90;
 
     /**
      * Attribute modifier used by the stress model.
