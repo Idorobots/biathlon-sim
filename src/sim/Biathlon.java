@@ -5,90 +5,153 @@ import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ProcessQueue;
 import desmoj.core.simulator.TimeInstant;
 
+/**
+ * The model of the Simulation.
+ * Defines a number of adjustable simulation parameters used by the processes.
+ */
 public class Biathlon extends Model {
-
     private static Biathlon instance = null;
 
-    protected static final float STEP_TIME = 1.0f; // / Simulation step in
-                                                   // seconds.
+     /**
+      * Simulation step in seconds (1.0f == 1 second).
+      */
+    public static final float STEP_TIME = 1.0f;
 
-    protected static final int NUM_COMPETITORS = 30; // / Number of competitors.
-    protected static final int NUM_SHOOTING_RANGES = 4; // / Number of shooting
-                                                        // ranges.
-    protected static final int SHOTS_PER_SHOOTING = 5; // / Number of shots per
-                                                       // shooting.
+    /**
+     * The number of competitors in a Biathlon competition.
+     */
+    public static final int NUM_COMPETITORS = 30;
 
-    protected static final float INITIAL_DISTANCE = 15000f; // / Initial
-                                                            // distance in
-                                                            // meters.
-    protected static final float PENALTY_DISTANCE = 150f; // / Penalty distance
-                                                          // in meters.
+    /**
+     * The number of shooting sessions per Biathlon competition.
+     */
+    public static final int NUM_SHOOTING_RANGES = 4;
 
-    protected static final float ACCURACY_MEAN = 0.9f; // / Mean for the
-                                                       // accuracy model.
-    protected static final float ACCURACY_STD_DEV = 0.1f; // / Stddev for the
-                                                          // accuracy model.
+    /**
+     * The number of shots fired per single shooting range visit.
+     */
+    public static final int SHOTS_PER_SHOOTING = 5;
 
-    protected static final float ACCURACY_FACTOR_DELTA = -0.0001f; // / Accuracy
-                                                                   // loss over
-                                                                   // time.
-    protected static final float ACCURACY_DELTA_PER_MISS = -0.02f; // / Accuracy
-                                                                   // "gain" per
-                                                                   // miss.
+    /**
+     * The initial race distance in meters (1.0f == 1 meter).
+     */
+    public static final float INITIAL_DISTANCE = 15000f;
 
-    protected static final float SHOOTING_TIME_MEAN = 5.0f; // / Mean for the
-                                                            // shooting time
-                                                            // model.
-    protected static final float SHOOTING_TIME_STD_DEV = 1.0f; // / Stddev for
-                                                               // the shootin
-                                                               // time modl.
+    /**
+     * The penalty distance in meters per missed shot (1.0f == 1 meter).
+     */
+    public static final float PENALTY_DISTANCE = 150f;
 
-    protected static final float SHOOTING_TIME_FACTOR_DELTA = 0.0001f;// /
-                                                                      // Shooting
-                                                                      // time
-                                                                      // "gain"
-                                                                      // over
-                                                                      // time.
-    protected static final float SHOOTING_TIME_DELTA_PER_MISS = 0.05f;// /
-                                                                      // Shooting
-                                                                      // time
-                                                                      // "gain"
-                                                                      // per
-                                                                      // miss.
+    /**
+     * The mean for the accuracy normal distribution model of the competitors.
+     */
+    public static final float ACCURACY_MEAN = 0.9f;
 
-    protected static final float MIN_SPEED = 2.0f; // / Minimal speed of a
-                                                   // competitor.
-    protected static final float MAX_SPEED = 10.0f; // / Maximal humanly
-                                                    // possible speed.
+    /**
+     * The standard deviation for the accuracy normal distribution model.
+     */
+    public static final float ACCURACY_STD_DEV = 0.1f;
 
-    protected static final float SPEED_MEAN = 8.0f; // / Mean in m/s for the
-                                                    // speed model.
-    protected static final float SPEED_STD_DEV = 1.0f; // / Stddev for the speed
-                                                       // model.
+    /**
+     * Accuracy change over time. Used for tiredness modeling.
+     */
+    public static final float ACCURACY_FACTOR_DELTA = -0.0001f;
 
-    protected static final float SPEED_FACTOR_DELTA = -0.0001f; // / Speed loss
-                                                                // over time.
-    protected static final float SPEED_DELTA_PER_MISS = -0.02f; // / Speed loss
-                                                                // per miss.
+    /**
+     * Accuracy change per missed shot. Used for stress model.
+     */
+    public static final float ACCURACY_DELTA_PER_MISS = -0.02f;
 
-    protected static final int MIN_DESPERATION = 2; // / Minimal random stress
-                                                    // level.
-    protected static final int MAX_DESPERATION = 10; // / Maximal random stress
-                                                     // level.
-    protected static final int DESPERATION_DELTA_PER_MISS = 7; // / Stress level
-                                                               // gain due to
-                                                               // miss.
+    /**
+     * The mean for the shooting time normal distribution of the competitors.
+     */
+    public static final float SHOOTING_TIME_MEAN = 5.0f;
 
-    protected static final int PANIC_THRESHOLD = 95; // / Panic threshold.
-    protected static final float PANIC_GAIN_MODIFIER = 1.1f; // / Modifier when
-                                                             // stressed.
-    protected static final float PANIC_LOSS_MODIFIER = 0.9f; // / Modifier when
-                                                             // stressed.
+    /**
+     * The standard deviation of the shooting time normal distribution.
+     */
+    public static final float SHOOTING_TIME_STD_DEV = 1.0f;
 
-    /** Competitors queueing at the shooting range. */
+    /**
+     * Shooting time change over time. Used by the tiredness model.
+     */
+    public static final float SHOOTING_TIME_FACTOR_DELTA = 0.0001f;
+
+    /**
+     * Shooting time change per missed shot. Used by the tiredness model.
+     */
+    public static final float SHOOTING_TIME_DELTA_PER_MISS = 0.05f;
+
+    /**
+     * Minimal valid speed of a competitor. Given in meters per second (1.0f == 1 m/s).
+     */
+    public static final float MIN_SPEED = 2.0f;
+
+    /**
+     * Maximal humanly possible speed of a competitor. Given in meters per second (1.0f == 1 m/s).
+     */
+    public static final float MAX_SPEED = 10.0f;
+
+    /**
+     * The mean of the competitor speed normal distribution. In meters per second.
+     */
+    public static final float SPEED_MEAN = 8.0f;
+
+    /**
+     * The standard deviation of the competitor speed normal distribution.
+     */
+    public static final float SPEED_STD_DEV = 1.0f;
+
+    /**
+     * Speed change over time. Used by the tiredness model.
+     */
+    public static final float SPEED_FACTOR_DELTA = -0.0001f;
+
+    /**
+     * Speed change per missed shot. Used by the stress model.
+     */
+    public static final float SPEED_DELTA_PER_MISS = -0.02f;
+
+    /**
+     * Minimal random stress level in percent (1 == 1%). Used by the stress model.
+     */
+    public static final int MIN_DESPERATION = 2;
+
+    /**
+     * Maximal random stress level in percent (1 == 1%).
+     */
+    public static final int MAX_DESPERATION = 10;
+
+    /**
+     * Stress change per missed shot. Given in percent (1 == 1%). Used by the stress model.
+     */
+    public static final int DESPERATION_DELTA_PER_MISS = 7;
+
+    /**
+     * Panic threshold - the minimal stress value causing a competitor to go batshit crazy.
+     */
+    public static final int PANIC_THRESHOLD = 95;
+
+    /**
+     * Attribute modifier used by the stress model.
+     * Increases a value of an attribute.
+     */
+    public static final float PANIC_GAIN_MODIFIER = 1.1f;
+
+    /**
+     * Attribute modifier used by the stress model.
+     * Decreases a value of an attribute.
+     */
+    public static final float PANIC_LOSS_MODIFIER = 0.9f;
+
+    /**
+     * Competitors queueing at the shooting range.
+     */
     protected desmoj.core.simulator.ProcessQueue<Competitor> competitorsQueue;
 
-    /** Not really needed, no? */
+    /**
+     * Not really needed, no?
+     */
     protected desmoj.core.simulator.ProcessQueue<ShootingRange> shootingRangeQueue;
 
 
@@ -96,19 +159,27 @@ public class Biathlon extends Model {
         super(owner, modelName, showInReport, showInTrace);
     }
 
-
+    /**
+     * Returns the singleton instance of this class.
+     * @return The singleton instance of this class.
+     */
     public static Biathlon getInstance() {
         if (instance == null)
             instance = new Biathlon(null, "Biathlon", true, true);
         return instance;
     }
 
-
+    /**
+     * The description of the Biathlon model.
+     * @return The description of the Biathlon model.
+     */
     public String description() {
         return "<description>";
     }
 
-
+    /**
+     * Initialization of the simulation processes.
+     */
     public void doInitialSchedules() {
         ShootingRange shootingRange = new ShootingRange(this, "Shooting Range", true);
         shootingRange.activate();
@@ -117,18 +188,26 @@ public class Biathlon extends Model {
         generator.activate();
     }
 
-
+    /**
+     * Initialization of the simulation. Rhymation of the documentation.
+     */
     public void init() {
         competitorsQueue = new ProcessQueue<Competitor>(this, "Competitors Queue", true, true);
         shootingRangeQueue = new ProcessQueue<ShootingRange>(this, "ShootingRange Queue", true, true);
     }
 
-
+    /**
+     * Estimates the duration of the simulation (in second, 1.0 == 1 s).
+     * @return The estimated duration of the simulation in seconds (1.0 == 1s).
+     */
     public static double estimateDuration() {
         return INITIAL_DISTANCE / SPEED_MEAN;
     }
 
-
+    /**
+     * Entry point of the simulation. Initializes and carries out the simulation logging results.
+     * @param args Program arguments.
+     */
     public static void main(java.lang.String[] args) {
 
         Biathlon model = Biathlon.getInstance();
