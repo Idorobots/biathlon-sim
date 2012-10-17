@@ -6,8 +6,7 @@ import java.util.Random;
  * A class containing several helper methods used across the simulation.
  */
 public class Helpers {
-
-    private static Random random = new Random();
+    private static Random random = new Random(Biathlon.UNIVERSAL_SEED);
 
     /**
      * Clamps a value <code>i</code> to the [<code>low</code>, <code>high</code>] range.

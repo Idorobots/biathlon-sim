@@ -13,6 +13,11 @@ public class Biathlon extends Model {
     private static Biathlon instance = null;
 
      /**
+      * A universal seed used for random generators.
+      */
+    public static final long UNIVERSAL_SEED = 0xDEADBEEF;
+
+     /**
       * Simulation step in seconds (1.0f == 1 second).
       */
     public static final float STEP_TIME = 1.0f;
