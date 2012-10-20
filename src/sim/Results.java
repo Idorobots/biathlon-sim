@@ -96,7 +96,7 @@ public class Results {
             // Do some pretty formatting...
             String d;
 
-            if(min == 0 && sec == 0) d = "";
+            if(min == 0 && sec == 0) d = "---";
             else if(min == 0)        d = String.format("+%d", sec);
             else                     d = String.format("+%d:%02d", min, sec);
 

@@ -38,7 +38,7 @@ public class ShootingRange extends SimProcess {
                 Competitor nextCompetitor = myModel.competitorsQueue.first();
                 myModel.competitorsQueue.remove(nextCompetitor);
 
-                myLogger.log(String.format("Competitor %s enters the shooting range.",
+                myLogger.log(String.format("%s enters the shooting range.",
                                            nextCompetitor.toString()));
 
                 int misses = nextCompetitor.computeShotsMissed();
@@ -54,10 +54,10 @@ public class ShootingRange extends SimProcess {
 
                 // FIXME These two show unordered in the log.
                 // FIXME Add a log queue?
-                myLogger.log(allTime, String.format("Competitor %s misses %d times.",
+                myLogger.log(allTime, String.format("%s misses %d times.",
                                                     nextCompetitor.toString(), misses));
 
-                myLogger.log(allTime, String.format("Competitor %s leaves the shooting range.",
+                myLogger.log(allTime, String.format("%s leaves the shooting range.",
                                                     nextCompetitor.toString()));
             }
         }
