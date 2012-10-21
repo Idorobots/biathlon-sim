@@ -48,4 +48,12 @@
 		</delete>
 	</target>
 
+	<target name="doc">
+	        <mkdir dir="doc/html" />
+		<javadoc sourcepath="src/"
+			 packagenames="sim"
+			 destdir="doc/html">
+			 <classpath refid="external-libs" />
+		</javadoc>
+	</target>
 </project>
